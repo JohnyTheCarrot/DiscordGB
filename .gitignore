@@ -1,0 +1,6 @@
+*.2bpp
+*.tilemap
+*.o
+*.sym
+.DS_Store
+*.gb
