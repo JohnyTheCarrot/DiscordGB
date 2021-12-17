@@ -13,6 +13,12 @@ StartLCD::
     ldh     [rLCDC],    a
     ret
 
+StartLCDAndEnableWindow::
+    ldh     a,          [rLCDC]
+    or      LCDCF_ON | LCDCF_WINON | LCDCF_WIN9C00
+    ldh     [rLCDC],    a
+    ret
+
 WaitVBlank::
     ldh     a,          [rLY]
     cp      144

@@ -60,6 +60,7 @@ Entry:
     cp      1
     jr      nz,         .waitForStartupToFinish
 
+    di
     call    WaitVBlank
     call    StopLCD
 
@@ -83,8 +84,26 @@ Entry:
     ld      de,         _SCRN1
     call    TilemapCopy
 
-    call    StartLCD
-    di
+    ld      hl,         _SCRN1
+    ld      d,          (DiscordClient.end - DiscordClient) / 16
+    call    IncrementMem
+
+    ld      a,          7
+    ldh     [rWX],      a
+    ld      a,          144 - 6 * 8
+    ldh     [rWY],      a
+
+    ld      hl,         Intro
+    ld      de,         _VRAM + (DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)
+    ld      bc,         Intro.end - Intro
+    call    MemCopyASCII
+
+    ld      hl,         Intro
+    ld      de,         _SCRN1 + SCRN_VX_B + 1
+    ld      bc,         Intro.end - Intro
+    call    TilemapASCII
+
+    call    StartLCDAndEnableWindow
 
 .loop
     halt
@@ -174,8 +193,8 @@ HBlank:
     pop     af
     reti
 
-; db "Version 1.0"
-; db "Made with love by JohnyTheCarrot#0001 on Discord"
+db "Version 1.0"
+db "Made with love by JohnyTheCarrot#0001 on Discord"
 
 section "HBlank", rom0 [$48]
     jp      HBlank
