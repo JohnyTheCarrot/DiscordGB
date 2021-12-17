@@ -117,21 +117,26 @@ TimerInterrupt:
     jr      .finishInterrupt
 
 HBlank:
+    ; save interrupts
     push    af
     push    hl
     push    bc
 
+    ; load SineLookupTable into hl and add [rLY] to hl
     ld      hl,         SineLookupTable
     ldh     a,          [rLY]
     ld      b,          0
     ld      c,          a
     add     hl,         bc
 
+    ; add [CurrentDelayCount] to hl
     ld      a,          [CurrentDelayCount]
-
     ld      c,          a
     add     hl,         bc
 
+    ; check if hl > SineLookupTable.end, if so, clear [hl]
+    ; before moving on to loading [hl] into [rSCX],
+    ; else just load [hl] as it is into [rSCX]
     ld      a,          h
     cp      (SineLookupTable.end & $FF00) >> 8
     jr      c,          .smallerThanSineTableEnd
@@ -143,10 +148,12 @@ HBlank:
     xor     a
     ld      [hl],       a
 
+    ; load [hl] into [rSCX]
 .smallerThanSineTableEnd
     ld      a,          [hl]
     ldh     [rSCX],     a
 
+    ; we're done, pop registers off stack & return + enable interrupts
     pop     bc
     pop     hl
     pop     af
@@ -156,12 +163,12 @@ SineLookupTable:
     def ANGLE = 0.0
     REPT 144
         db MUL(10, SIN(ANGLE))
-        redef ANGLE = ANGLE + 1700.0 ; 256.0 = 65536 degrees / 256 entries
+        redef ANGLE = ANGLE + 1700.0
     ENDR
 .end
 
-db "Version 1.0"
-db "Made with love by JohnyTheCarrot#0001 on Discord"
+; db "Version 1.0"
+; db "Made with love by JohnyTheCarrot#0001 on Discord"
 
 section "HBlank", rom0 [$48]
     jp      HBlank
