@@ -30,6 +30,7 @@ Entry:
 
     ; copy tilemap into VRAM
     ld      hl,         DiscordLogoTilemap
+    ld      de,         _SCRN0
     call    TilemapCopy
 
     ; turn the LCD on
@@ -70,6 +71,16 @@ Entry:
 
     ; copy tilemap into VRAM
     ld      hl,         DiscordClientTilemap
+    ld      de,         _SCRN0
+    call    TilemapCopy
+
+    ld      hl,         Dialog
+    ld      de,         _VRAM + (DiscordClient.end - DiscordClient)
+    ld      bc,         Dialog.end - Dialog
+    call    MemCopy
+
+    ld      hl,         DialogTilemap
+    ld      de,         _SCRN1
     call    TilemapCopy
 
     call    StartLCD
@@ -140,32 +151,28 @@ HBlank:
     ld      a,          h
     cp      (SineLookupTable.end & $FF00) >> 8
     jr      c,          .smallerThanSineTableEnd
+    jr      nz,         .clearSCX
 
     ld      a,          l
     cp      SineLookupTable.end & $FF
     jr      c,         .smallerThanSineTableEnd
 
+.clearSCX
     xor     a
-    ld      [hl],       a
+    ldh     [rSCX],     a
+    jr      .finish
 
     ; load [hl] into [rSCX]
 .smallerThanSineTableEnd
     ld      a,          [hl]
     ldh     [rSCX],     a
 
+.finish
     ; we're done, pop registers off stack & return + enable interrupts
     pop     bc
     pop     hl
     pop     af
     reti
-
-SineLookupTable:
-    def ANGLE = 0.0
-    REPT 144
-        db MUL(10, SIN(ANGLE))
-        redef ANGLE = ANGLE + 1700.0
-    ENDR
-.end
 
 ; db "Version 1.0"
 ; db "Made with love by JohnyTheCarrot#0001 on Discord"

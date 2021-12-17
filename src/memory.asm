@@ -62,9 +62,9 @@ MemCopyMono::
 */
 
 ; hl => source
+; de => dest
 TilemapCopy::
     ; load into de (destination) _SCRN0 ($9800) and clear b & c
-    ld      de,     _SCRN0
     ld      b,      0
     ld      c,      0
 
