@@ -134,14 +134,13 @@ HBlank:
     push    bc
 
     ; load SineLookupTable into hl and add [rLY] to hl
-    ld      hl,         SineLookupTable
+    ld      h,          high(SineLookupTable)
     ldh     a,          [rLY]
-    ld      b,          0
-    ld      c,          a
-    add     hl,         bc
+    ld      l,          a
 
     ; add [CurrentDelayCount] to hl
     ld      a,          [CurrentDelayCount]
+    ld      b,          0
     ld      c,          a
     add     hl,         bc
 
@@ -149,12 +148,12 @@ HBlank:
     ; before moving on to loading [hl] into [rSCX],
     ; else just load [hl] as it is into [rSCX]
     ld      a,          h
-    cp      (SineLookupTable.end & $FF00) >> 8
+    cp      high(SineLookupTable.end)
     jr      c,          .smallerThanSineTableEnd
     jr      nz,         .clearSCX
 
     ld      a,          l
-    cp      SineLookupTable.end & $FF
+    cp      low(SineLookupTable.end)
     jr      c,         .smallerThanSineTableEnd
 
 .clearSCX
