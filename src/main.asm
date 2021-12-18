@@ -174,8 +174,8 @@ HBlank:
     pop     af
     reti
 
-; db "Version 1.0"
-; db "Made with love by JohnyTheCarrot#0001 on Discord"
+db "Version 1.0"
+db "Made with love by JohnyTheCarrot#0001 on Discord"
 
 section "HBlank", rom0 [$48]
     jp      HBlank
