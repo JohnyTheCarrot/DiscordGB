@@ -36,7 +36,7 @@ DialogTilemap::
     incbin "gfx/dialog-box.tilemap"
 .end::
 
-section "Sine Lookup Table", rom0
+section "Sine Lookup Table", rom0, align [8]
 SineLookupTable::
     def ANGLE = 0.0
     REPT 144
