@@ -92,11 +92,11 @@ Entry:
     ldh     [rWX],      a
     ld      a,          144 - 6 * 8
     ldh     [rWY],      a
-
-    ld      hl,         Intro
+    
+    ld      hl,         Font
     ld      de,         _VRAM + (DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)
-    ld      bc,         Intro.end - Intro
-    call    MemCopyASCII
+    ld      bc,         Font.end - Font
+    call    MemCopyMono
 
     ld      hl,         Intro
     ld      de,         _SCRN1 + SCRN_VX_B + 1

@@ -41,6 +41,30 @@ MemSet::
     jr      MemSet
 */
 
+ShiftLeftLIntoH:
+    sla     l
+    ret     nc
+    set     0,      h
+    ret
+
+; hl => source
+; de => dest
+; bc => bytecount
+MemCopyMono::
+    ld      a,      c
+    cp      b
+    jr      nz,     .copy
+    cp      0
+    ret     z
+.copy
+    dec     bc
+    ld      a,      [hl+]
+    ld      [de],   a
+    inc     de
+    ld      [de],   a
+    inc     de
+    jr      MemCopyMono
+
 ; hl => string pointer
 ; de => dest
 ; bc => bytecount
@@ -67,12 +91,9 @@ MemCopyASCII::
     ld      h,      0
 
     ; hl * 8 via hl << 3
-    sla     l
-    sla     l
-    sla     l
-    sla     h
-    sla     h
-    sla     h
+    call    ShiftLeftLIntoH
+    call    ShiftLeftLIntoH
+    call    ShiftLeftLIntoH
 
     ; add (Font address + c) to hl
     push    de
@@ -103,6 +124,23 @@ MemCopyASCII::
     pop     bc
     jr      MemCopyASCII
 
+; hl => map
+; a  => value
+; return value => a
+MapLookup:
+    push    de
+    push    hl
+    ; calculate index
+    sub     $20
+    ld      d,      0
+    ld      e,      a
+    add     hl,     de
+    ld      a,      [hl]
+    
+    pop     hl
+    pop     de
+    ret
+
 ; hl => string pointer
 ; de => dest
 ; bc => bytecount
@@ -117,11 +155,12 @@ TilemapASCII::
 .load
     dec     bc
     ld      a,      [hl+]
-    sub     ASCII_START_CODE
-    sra     a
-    sra     a
-    sra     a
-    add     ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
+    
+    push    hl
+    ld      hl,     ASCIICodeToTileIndex
+    call    MapLookup
+    pop     hl
+
     ld      [de],   a
     inc     de
 
