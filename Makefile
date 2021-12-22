@@ -14,7 +14,7 @@ gfx:
 	@find . -iname "*.png" -exec sh -c 'rgbgfx -T -u -o $${1%.png}.2bpp $$1' _ {} \;
 
 .asm.o:
-	@rgbasm -i $(src)/ -o $@ $<
+	@rgbasm -Weverything -i $(src)/ -o $@ $<
 
 $(name).gb: gfx $(obj)
 	@rgblink -n $(name).sym -o $@ $(obj)

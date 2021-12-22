@@ -65,65 +65,6 @@ MemCopyMono::
     inc     de
     jr      MemCopyMono
 
-; hl => string pointer
-; de => dest
-; bc => bytecount
-MemCopyASCII::
-    ; return if bc is 0: if (b == c && b == 0) return;
-    ld      a,      c
-    cp      b
-    jr      nz,     .copy
-    cp      0
-    ret     z
-
-    ; runs per character
-.copy
-    dec     bc
-    push    bc
-    ld      c,      0
-
-    ; runs per line of character
-.copyCharacter
-    push    hl
-    ld      a,      [hl]
-    sub     ASCII_START_CODE ; we're using this as the base pointer
-    ld      l,      a
-    ld      h,      0
-
-    ; hl * 8 via hl << 3
-    call    ShiftLeftLIntoH
-    call    ShiftLeftLIntoH
-    call    ShiftLeftLIntoH
-
-    ; add (Font address + c) to hl
-    push    de
-    ld      de,     Font
-    add     hl,     de
-    ld      d,      0
-    ld      a,      c
-    ld      e,      a
-    add     hl,     de
-    pop     de
-
-    ; load [hl] into [de+] and [de+]
-    ld      a,      [hl]
-    ld      [de],   a
-    inc     de
-    ld      [de],   a
-    inc     de
-
-    ; restore hl; if ++c == 8, move to next character in string
-    inc     c
-    ld      a,      c
-    pop     hl
-    cp      8
-    jr      c,      .copyCharacter
-
-    ; character done, move on to next
-    inc     hl
-    pop     bc
-    jr      MemCopyASCII
-
 ; hl => map
 ; a  => value
 ; return value => a
@@ -141,10 +82,65 @@ MapLookup:
     pop     de
     ret
 
+def MAX_LINE_LENGTH = 18
+
+; hl => string pointer
+; c => bytecount; max $FF
+LoadTilemapLines::
+    ld      b,      0 ; keeps track of the current line
+.loop
+    inc     b
+    call    .showLine
+    ld      a,      b
+    cp      4
+    jr      nz,     .loop
+    ret
+
+.showLine
+    ld      de,     _SCRN1 + 1
+    ld      a,      e
+    push    bc
+
+.addVirtualWidthLoop
+    ld      a,      e
+    add     SCRN_VX_B
+    ld      e,      a
+    ld      a,      b
+    dec     a
+    ld      b,      a
+    cp      0
+    jr      nz,     .addVirtualWidthLoop
+    pop     bc
+
+    push    bc
+    ld      a,      c
+    cp      MAX_LINE_LENGTH
+    call    nc,     .setBCToMaxLineLength
+    
+    ld      b,      0
+    call    LoadTextTilemap
+    pop     bc
+    ld      a,      c
+    cp      MAX_LINE_LENGTH
+    jr      z,     .subtractMaxLineLength
+    jr      nc,     .subtractMaxLineLength
+    ld      c,      0
+    ret
+
+.subtractMaxLineLength
+    sub     a,      MAX_LINE_LENGTH
+    ld      c,      a
+    ret
+
+.setBCToMaxLineLength
+    ld      bc,     MAX_LINE_LENGTH
+    ret
+
+    
 ; hl => string pointer
 ; de => dest
 ; bc => bytecount
-TilemapASCII::
+LoadTextTilemap::
     ; return if bc is 0: if (b == c && b == 0) return;
     ld      a,      c
     cp      b
@@ -164,7 +160,7 @@ TilemapASCII::
     ld      [de],   a
     inc     de
 
-    jr      TilemapASCII
+    jr      LoadTextTilemap
 
 ; hl => dest
 ; d => by

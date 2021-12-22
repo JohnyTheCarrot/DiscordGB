@@ -92,16 +92,15 @@ Entry:
     ldh     [rWX],      a
     ld      a,          144 - 6 * 8
     ldh     [rWY],      a
-    
+
     ld      hl,         Font
     ld      de,         _VRAM + (DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)
     ld      bc,         Font.end - Font
     call    MemCopyMono
 
     ld      hl,         Intro
-    ld      de,         _SCRN1 + SCRN_VX_B + 1
     ld      bc,         Intro.end - Intro
-    call    TilemapASCII
+    call    LoadTilemapLines
 
     call    StartLCDAndEnableWindow
 
