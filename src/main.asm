@@ -1,4 +1,5 @@
 include "hardware.inc"
+include "consts.inc"
 
 section "rom entry point", rom0 [$100]
     nop
@@ -48,7 +49,7 @@ Entry:
     ld      [hl],       0
 
     ; set interrupt flags and enable interrupts
-    ld      a,          IEF_TIMER | IEF_STAT
+    ld      a,          IEF_TIMER | IEF_STAT | IEF_VBLANK
     ldh     [rIE],      a
     ld      a,          STATF_MODE00
     ldh     [rSTAT],    a
@@ -60,7 +61,7 @@ Entry:
     cp      1
     jr      nz,         .waitForStartupToFinish
 
-    di
+    ; di
     call    WaitVBlank
     call    StopLCD
 
@@ -98,15 +99,20 @@ Entry:
     ld      bc,         Font.end - Font
     call    MemCopyMono
 
-    ld      hl,         Intro
-    ld      bc,         Intro.end - Intro
-    call    LoadTilemapLines
+    call    StartLCD
 
-    call    StartLCDAndEnableWindow
+    ldh     a,          [rP1]
+    or      P1F_GET_DPAD
+    ldh     [rP1],      a
+
+    ld      hl,         Intro
+    call    StartDialogSequence
 
 .loop
     halt
-    jp .loop
+    jr .loop
+
+
 
 TimerInterrupt:
     ; save af
@@ -144,6 +150,8 @@ TimerInterrupt:
 
     ; jump to finish
     jr      .finishInterrupt
+
+
 
 HBlank:
     ; save interrupts
@@ -191,8 +199,25 @@ HBlank:
     pop     af
     reti
 
+
+
+VBlank:
+    push    af
+    push    bc
+
+    call UpdateInput
+
+    pop     bc
+    pop     af
+    reti
+
+
+
 db "Version 1.0"
 db "Made with love by JohnyTheCarrot#0001 on Discord"
+
+section "VBlank", rom0 [$40]
+    jp      VBlank
 
 section "HBlank", rom0 [$48]
     jp      HBlank

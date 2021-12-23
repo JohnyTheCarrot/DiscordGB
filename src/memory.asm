@@ -23,7 +23,6 @@ MemCopy::
     inc     de
     jr      MemCopy
 
-/*
 ; h  => value
 ; de => dest
 ; bc => bytecount
@@ -34,133 +33,14 @@ MemSet::
     cp      0
     ret     z
 .copy
+    push    hl
+    call    WaitVRAMAccessible
+    pop     hl
     dec     bc
     ld      a,      h
     ld      [de],   a
     inc     de
     jr      MemSet
-*/
-
-ShiftLeftLIntoH:
-    sla     l
-    ret     nc
-    set     0,      h
-    ret
-
-; hl => source
-; de => dest
-; bc => bytecount
-MemCopyMono::
-    ld      a,      c
-    cp      b
-    jr      nz,     .copy
-    cp      0
-    ret     z
-.copy
-    dec     bc
-    ld      a,      [hl+]
-    ld      [de],   a
-    inc     de
-    ld      [de],   a
-    inc     de
-    jr      MemCopyMono
-
-; hl => map
-; a  => value
-; return value => a
-MapLookup:
-    push    de
-    push    hl
-    ; calculate index
-    sub     $20
-    ld      d,      0
-    ld      e,      a
-    add     hl,     de
-    ld      a,      [hl]
-    
-    pop     hl
-    pop     de
-    ret
-
-def MAX_LINE_LENGTH = 18
-
-; hl => string pointer
-; c => bytecount; max $FF
-LoadTilemapLines::
-    ld      b,      0 ; keeps track of the current line
-.loop
-    inc     b
-    call    .showLine
-    ld      a,      b
-    cp      4
-    jr      nz,     .loop
-    ret
-
-.showLine
-    ld      de,     _SCRN1 + 1
-    ld      a,      e
-    push    bc
-
-.addVirtualWidthLoop
-    ld      a,      e
-    add     SCRN_VX_B
-    ld      e,      a
-    ld      a,      b
-    dec     a
-    ld      b,      a
-    cp      0
-    jr      nz,     .addVirtualWidthLoop
-    pop     bc
-
-    push    bc
-    ld      a,      c
-    cp      MAX_LINE_LENGTH
-    call    nc,     .setBCToMaxLineLength
-    
-    ld      b,      0
-    call    LoadTextTilemap
-    pop     bc
-    ld      a,      c
-    cp      MAX_LINE_LENGTH
-    jr      z,     .subtractMaxLineLength
-    jr      nc,     .subtractMaxLineLength
-    ld      c,      0
-    ret
-
-.subtractMaxLineLength
-    sub     a,      MAX_LINE_LENGTH
-    ld      c,      a
-    ret
-
-.setBCToMaxLineLength
-    ld      bc,     MAX_LINE_LENGTH
-    ret
-
-    
-; hl => string pointer
-; de => dest
-; bc => bytecount
-LoadTextTilemap::
-    ; return if bc is 0: if (b == c && b == 0) return;
-    ld      a,      c
-    cp      b
-    jr      nz,     .load
-    cp      0
-    ret     z
-
-.load
-    dec     bc
-    ld      a,      [hl+]
-    
-    push    hl
-    ld      hl,     ASCIICodeToTileIndex
-    call    MapLookup
-    pop     hl
-
-    ld      [de],   a
-    inc     de
-
-    jr      LoadTextTilemap
 
 ; hl => dest
 ; d => by

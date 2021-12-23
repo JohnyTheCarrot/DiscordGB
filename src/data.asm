@@ -1,4 +1,5 @@
 include "hardware.inc"
+include "consts.inc"
 
 /*
 ============================
@@ -48,7 +49,6 @@ SineLookupTable::
 opt bX.
 
 ; created with help from https://github.com/nezticle/rgbds-template/blob/master/inc/ibmpc1.inc
-
 Font::
     db %........
     db %........
@@ -905,25 +905,29 @@ Font::
     db %........
     db %........
 
-    db %........
-    db %...X....
+    db %..X.....
+    db %..XX....
     db %..XXX...
-    db %.XX.XX..
-    db %XX...XX.
-    db %XXXXXXX.
-    db %........
-    db %........
+    db %..XXXX..
+    db %..XXXX..
+    db %..XXX...
+    db %..XX....
+    db %..X.....
 .end::
 
 ASCIICodeToTileIndex::
-    for Ch, " ", "~"
+    for Ch, " ", $7F + 1 ; +1 because range is non inclusive
         db ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16 + (Ch - " ")
     endr
 .end::
 
 ; Text
 Intro::
-    db "Hello, World!"
+    db "Test string 1", NEXT_DIALOG
+    db "Test string 2", NEXT_DIALOG
+    db "Test string 3", NEXT_DIALOG
+    db "Test string 4", NEXT_DIALOG
+    db "Test string 5", STR_TERM
 .end::
 
 /*

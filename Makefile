@@ -3,7 +3,7 @@
 
 name	= Discord
 src		= src
-obj 	= src/main.o src/memory.o src/video.o src/data.o
+obj 	= src/main.o src/memory.o src/video.o src/data.o src/string.o src/dialog.o src/input.o src/input_utils.o
 
 all:	clean $(name).gb
 
