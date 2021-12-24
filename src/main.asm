@@ -37,17 +37,6 @@ Entry:
     ; turn the LCD on
     call    StartLCD
 
-    ; turn timer control on at 16 kilohertz
-    ld      a,          TACF_START | TACF_16KHZ
-    ld      hl,         rTAC
-    ldh     [rTAC],     a
-
-    ; initialise variables
-    ld      hl,         IsStartupFinished
-    ld      [hl],       0
-    ld      hl,         CurrentDelayCount
-    ld      [hl],       0
-
     ; set interrupt flags and enable interrupts
     ld      a,          IEF_TIMER | IEF_STAT | IEF_VBLANK
     ldh     [rIE],      a
@@ -55,11 +44,10 @@ Entry:
     ldh     [rSTAT],    a
     ei
 
-.waitForStartupToFinish
-    ld      hl,         IsStartupFinished
-    ld      a,          [hl]
-    cp      1
-    jr      nz,         .waitForStartupToFinish
+    sleep_fast          2
+
+    ld      hl,         rIE
+    res     1,          [hl]
 
     ; di
     call    WaitVBlank
@@ -111,45 +99,6 @@ Entry:
 .loop
     halt
     jr .loop
-
-
-
-TimerInterrupt:
-    ; save af
-    push    af
-    push    hl
-
-    ld      hl,     CurrentDelayCount
-    inc     [hl]
-    ld      a,      [hl]
-    ; 2s / (1 / 16384Hz) / 256 ticks = 128 rTIMA overflows ; + 1 because we increment before the check
-    cp      128 + 1
-    jr      z,     .finishDelay
-    
-    ; we're finished with the interrupt, restore registers, return and turn interrupts back on
-.finishInterrupt
-    pop     hl
-    pop     af
-    reti
-
-    ; the delay is done, set IsStartupFinished to true, disable the timer, it and the hblank interrupt, and jump to .finishInterrupt
-.finishDelay
-    ld      hl,     IsStartupFinished
-    inc     [hl]
-
-    ; disable timer
-    ldh     a,      [rTAC]
-    xor     TACF_START
-    ldh     [rTAC], a
-
-    ; disable hblank and the timer interrupts
-    ldh     a,      [rIE]
-    xor     IEF_STAT
-    xor     IEF_TIMER
-    ldh     [rIE],  a
-
-    ; jump to finish
-    jr      .finishInterrupt
 
 
 

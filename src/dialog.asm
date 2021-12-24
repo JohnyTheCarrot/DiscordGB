@@ -41,6 +41,8 @@ LoadCharTiles::
     ld      a,      [hl]
     cp      0
     ret     z
+    cp      DELAY
+    jr      z,      .sleepText
 
     push    hl
 
@@ -76,7 +78,10 @@ LoadCharTiles::
     ; we're prepared, let's enter the loop again
     jr      .loop
 
-
+.sleepText
+    sleep_slow  1
+    inc         hl
+    jr          .loop
 
 
 /*

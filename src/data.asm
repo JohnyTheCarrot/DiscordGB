@@ -923,11 +923,11 @@ ASCIICodeToTileIndex::
 
 ; Text
 Intro::
-    db "Hey!", NEXT_DIALOG
-    db "This is Discord: GameBoy Edition.", NEXT_DIALOG
-    db "A pretend 8-bit Discord client for the Nintendo GameBoy!", NEXT_DIALOG
-    db "It is written in Assembly by JohnyTheCarrot#0001 on Discord.", NEXT_DIALOG
-    db "May Wungus bless you always.", STR_TERM
+    db "Your day is going pretty great, when", "suddenly..", NEXT_DIALOG, DELAY
+    db "@everyone", NEXT_DIALOG
+    db "Free distribution of discord nitro  for 3 months from steam!!", NEXT_DIALOG
+    db "0_0", NEXT_DIALOG
+    db "https://discord.com/notro", STR_TERM
 .end::
 
 /*
@@ -938,4 +938,3 @@ Variables
 
 section "Variables", wram0
 IsStartupFinished:: ds 1
-CurrentDelayCount:: ds 1
