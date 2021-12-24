@@ -923,11 +923,11 @@ ASCIICodeToTileIndex::
 
 ; Text
 Intro::
-    db "Test string 1", NEXT_DIALOG
-    db "Test string 2", NEXT_DIALOG
-    db "Test string 3", NEXT_DIALOG
-    db "Test string 4", NEXT_DIALOG
-    db "Test string 5", STR_TERM
+    db "Hey!", NEXT_DIALOG
+    db "This is Discord: GameBoy Edition.", NEXT_DIALOG
+    db "A pretend 8-bit Discord client for the Nintendo GameBoy!", NEXT_DIALOG
+    db "It is written in Assembly by JohnyTheCarrot#0001 on Discord.", NEXT_DIALOG
+    db "May Wungus bless you always.", STR_TERM
 .end::
 
 /*
