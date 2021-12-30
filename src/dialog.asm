@@ -32,8 +32,6 @@ MemCopyMono::
 */
 LoadCharTiles::
     ld      de,     _SCRN1 + SCRN_VX_B + 1
-
-    ; set first line destination & set c to 0
     ld      c,      MAX_LINE_LENGTH
 
 .loop
@@ -43,6 +41,8 @@ LoadCharTiles::
     ret     z
     cp      DELAY
     jr      z,      .sleepText
+    cp      SHAKE_SCREEN
+    jr      z,      .shakeScreen
 
     push    hl
 
@@ -79,9 +79,54 @@ LoadCharTiles::
     jr      .loop
 
 .sleepText
-    sleep_slow  1
+    sleep_fast  1.0
     inc         hl
     jr          .loop
+
+
+.shakeScreen
+    push    af
+    xor     a
+
+.shakeLoop
+    inc     a
+    cp      3
+    jr      z,      .finish
+    push    af
+    sleep_slow 0.0625
+    call    WaitVBlank
+    ld      a,      2
+    ldh     [rSCY], a
+    ld      a,      -2
+    ldh     [rSCX], a
+    sleep_slow 0.0625
+    call    WaitVBlank
+    ld      a,      -2
+    ldh     [rSCY], a
+    ld      a,      2
+    ldh     [rSCX], a
+    sleep_slow 0.0625
+    call    WaitVBlank
+    ld      a,      2
+    ldh     [rSCY], a
+    ld      a,      2
+    ldh     [rSCX], a
+    sleep_slow 0.0625
+    call    WaitVBlank
+    ld      a,      -2
+    ldh     [rSCY], a
+    ld      a,      -2
+    ldh     [rSCX], a
+    pop     af
+    jp      .shakeLoop
+
+.finish
+    ld      a,      0
+    ldh     [rSCX], a
+    ldh     [rSCY], a
+    pop     af
+    inc     hl
+    jp      .loop
 
 
 /*

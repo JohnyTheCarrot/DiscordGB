@@ -44,7 +44,7 @@ Entry:
     ldh     [rSTAT],    a
     ei
 
-    sleep_fast          2
+    sleep_fast          2.0
 
     ld      hl,         rIE
     res     1,          [hl]

@@ -41,7 +41,7 @@ section "Sine Lookup Table", rom0, align [8]
 SineLookupTable::
     def ANGLE = 0.0
     REPT 144
-    db MUL(10, SIN(ANGLE))
+        db MUL(10, SIN(ANGLE))
         redef ANGLE = ANGLE + 1700.0
     ENDR
 .end::
@@ -923,11 +923,13 @@ ASCIICodeToTileIndex::
 
 ; Text
 Intro::
-    db "Your day is going pretty great, when", "suddenly..", NEXT_DIALOG, DELAY
-    db "@everyone", NEXT_DIALOG
-    db "Free distribution of discord nitro  for 3 months from steam!!", NEXT_DIALOG
-    db "0_0", NEXT_DIALOG
-    db "https://discord.com/notro", STR_TERM
+    db "Your day is going pretty great, when", "suddenly.", DELAY, ".", DELAY, NEXT_DIALOG
+    db DELAY, ".", DELAY, ".", DELAY, ".", DELAY, "@everyone", SHAKE_SCREEN, DELAY, NEXT_DIALOG
+    db "You: What was that?", NEXT_DIALOG
+    db DELAY, SHAKE_SCREEN, DELAY, "Oh damn, they're  back aren't they..", NEXT_DIALOG
+    db "???: Free distribution of discord nitro for 3 months from steam!!", NEXT_DIALOG
+    db "You: Shit.", NEXT_DIALOG
+    db "???: https://discord.com/notro", STR_TERM
 .end::
 
 /*

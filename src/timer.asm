@@ -22,7 +22,8 @@ TimerInterrupt::
 
 
 /*
-    ticks = x * 4096Hz / 256 where x is the amount of seconds
+    Enables timer & waits for it to finish before returning.
+
     Modifies: hl, a
 */
 Sleep::
