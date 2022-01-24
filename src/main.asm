@@ -103,7 +103,7 @@ Entry:
 
 
 HBlank:
-    ; save interrupts
+    ; save registers
     push    af
     push    hl
     push    bc
@@ -154,7 +154,7 @@ VBlank:
     push    af
     push    bc
 
-    call UpdateInput
+    call    UpdateInput
 
     pop     bc
     pop     af

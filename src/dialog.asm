@@ -35,20 +35,16 @@ LoadCharTiles::
     ld      c,      MAX_LINE_LENGTH
 
 .loop
-    ; while ((a = [hl+]) != 0), returning from subroutine when while loop finishes
+    ; while ((a = [hl+]) != STR_TERM), returning from subroutine when while loop finishes
     ld      a,      [hl]
-    cp      0
+    cp      STR_TERM
     ret     z
     cp      DELAY
     jr      z,      .sleepText
     cp      SHAKE_SCREEN
     jr      z,      .shakeScreen
 
-    push    hl
-
-    ld      hl,     ASCIICodeToTileIndex 
-    sub     " "
-    call    ArrayRead
+    add     ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
 
     push    hl
     call    WaitVRAMAccessible
@@ -56,8 +52,6 @@ LoadCharTiles::
 
     ld      [de],   a
     inc     de
-
-    pop     hl
 
     ld      a,      [hl+]
     cp      NEXT_DIALOG
@@ -179,12 +173,12 @@ HideDialog::
 ; Utils
 ; ============================
 
-
 /*
-    hl => map
-    a  => value
-    return value => a
+hl => map
+a  => value
+return value => a
 */
+/*
 ArrayRead:
     push    de
     push    hl
@@ -197,3 +191,4 @@ ArrayRead:
     pop     hl
     pop     de
     ret
+*/

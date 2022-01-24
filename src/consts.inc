@@ -7,10 +7,10 @@ P1F_DPAD_LEFT   = %00100000
 P1F_DPAD_UP     = %01000000
 P1F_DPAD_DOWN   = %10000000
 
-def STR_TERM        = 0
-def NEXT_DIALOG     = $7F ; used to split the same text into multiple dialog boxes
-def DELAY           = $80
-def SHAKE_SCREEN    = $81
+def STR_TERM        = $FF
+def NEXT_DIALOG     = $7F - $20 ; used to split the same text into multiple dialog boxes
+def DELAY           = $80 - $20
+def SHAKE_SCREEN    = $81 - $20
 
 /*
 Sleeps using the specified clock speed.
