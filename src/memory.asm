@@ -1,5 +1,7 @@
 include "hardware.inc"
 
+def ASCII_START_CODE = $20
+
 section "Memory Utils", rom0
 
 ; hl => source
@@ -21,7 +23,6 @@ MemCopy::
     inc     de
     jr      MemCopy
 
-/*
 ; h  => value
 ; de => dest
 ; bc => bytecount
@@ -32,34 +33,33 @@ MemSet::
     cp      0
     ret     z
 .copy
+    push    hl
+    call    WaitVRAMAccessible
+    pop     hl
     dec     bc
     ld      a,      h
     ld      [de],   a
     inc     de
     jr      MemSet
-*/
 
-/*
-might use in the future, do not delete
-
-; hl => source
-; de => dest
-; bc => bytecount
-MemCopyMono::
+; hl => dest
+; d => by
+IncrementMem::
+    ld      bc,     SCRN_Y_B * SCRN_X_B
+.checkLoop
+    ; return if bc is 0: if (b == c && b == 0) return;
     ld      a,      c
     cp      b
-    jr      nz,     .copy
+    jr      nz,     .increment
     cp      0
     ret     z
-.copy
+
+.increment
     dec     bc
-    ld      a,      [hl+]
-    ld      [de],   a
-    inc     de
-    ld      [de],   a
-    inc     de
-    jr      MemCopyMono
-*/
+    ld      a,      [hl]
+    add     d
+    ld      [hl+],   a
+    jr      .checkLoop
 
 ; hl => source
 ; de => dest

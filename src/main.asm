@@ -1,4 +1,5 @@
 include "hardware.inc"
+include "consts.inc"
 
 section "rom entry point", rom0 [$100]
     nop
@@ -36,30 +37,19 @@ Entry:
     ; turn the LCD on
     call    StartLCD
 
-    ; turn timer control on at 16 kilohertz
-    ld      a,          TACF_START | TACF_16KHZ
-    ld      hl,         rTAC
-    ldh     [rTAC],     a
-
-    ; initialise variables
-    ld      hl,         IsStartupFinished
-    ld      [hl],       0
-    ld      hl,         CurrentDelayCount
-    ld      [hl],       0
-
     ; set interrupt flags and enable interrupts
-    ld      a,          IEF_TIMER | IEF_STAT
+    ld      a,          IEF_TIMER | IEF_STAT | IEF_VBLANK
     ldh     [rIE],      a
     ld      a,          STATF_MODE00
     ldh     [rSTAT],    a
     ei
 
-.waitForStartupToFinish
-    ld      hl,         IsStartupFinished
-    ld      a,          [hl]
-    cp      1
-    jr      nz,         .waitForStartupToFinish
+    sleep_fast          2.0
 
+    ld      hl,         rIE
+    res     1,          [hl]
+
+    ; di
     call    WaitVBlank
     call    StopLCD
 
@@ -83,52 +73,37 @@ Entry:
     ld      de,         _SCRN1
     call    TilemapCopy
 
+    ld      hl,         _SCRN1
+    ld      d,          (DiscordClient.end - DiscordClient) / 16
+    call    IncrementMem
+
+    ld      a,          7
+    ldh     [rWX],      a
+    ld      a,          144 - 6 * 8
+    ldh     [rWY],      a
+
+    ld      hl,         Font
+    ld      de,         _VRAM + (DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)
+    ld      bc,         Font.end - Font
+    call    MemCopyMono
+
     call    StartLCD
-    di
+
+    ldh     a,          [rP1]
+    or      P1F_GET_DPAD
+    ldh     [rP1],      a
+
+    ld      hl,         Intro
+    call    StartDialogSequence
 
 .loop
     halt
-    jp .loop
+    jr .loop
 
-TimerInterrupt:
-    ; save af
-    push    af
-    push    hl
 
-    ld      hl,     CurrentDelayCount
-    inc     [hl]
-    ld      a,      [hl]
-    ; 2s / (1 / 16384Hz) / 256 ticks = 128 rTIMA overflows ; + 1 because we increment before the check
-    cp      128 + 1
-    jr      z,     .finishDelay
-    
-    ; we're finished with the interrupt, restore registers, return and turn interrupts back on
-.finishInterrupt
-    pop     hl
-    pop     af
-    reti
-
-    ; the delay is done, set IsStartupFinished to true, disable the timer, it and the hblank interrupt, and jump to .finishInterrupt
-.finishDelay
-    ld      hl,     IsStartupFinished
-    inc     [hl]
-
-    ; disable timer
-    ldh     a,      [rTAC]
-    xor     TACF_START
-    ldh     [rTAC], a
-
-    ; disable hblank and the timer interrupts
-    ldh     a,      [rIE]
-    xor     IEF_STAT
-    xor     IEF_TIMER
-    ldh     [rIE],  a
-
-    ; jump to finish
-    jr      .finishInterrupt
 
 HBlank:
-    ; save interrupts
+    ; save registers
     push    af
     push    hl
     push    bc
@@ -173,8 +148,25 @@ HBlank:
     pop     af
     reti
 
+
+
+VBlank:
+    push    af
+    push    bc
+
+    call    UpdateInput
+
+    pop     bc
+    pop     af
+    reti
+
+
+
 db "Version 1.0"
 db "Made with love by JohnyTheCarrot#0001 on Discord"
+
+section "VBlank", rom0 [$40]
+    jp      VBlank
 
 section "HBlank", rom0 [$48]
     jp      HBlank

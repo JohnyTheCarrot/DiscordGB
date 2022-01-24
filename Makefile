@@ -3,7 +3,7 @@
 
 name	= Discord
 src		= src
-obj 	= src/main.o src/memory.o src/video.o src/data.o
+obj 	= src/main.o src/memory.o src/video.o src/data.o src/string.o src/dialog.o src/input.o src/input_utils.o src/timer.o
 
 all:	clean $(name).gb
 
@@ -14,7 +14,7 @@ gfx:
 	@find . -iname "*.png" -exec sh -c 'rgbgfx -T -u -o $${1%.png}.2bpp $$1' _ {} \;
 
 .asm.o:
-	@rgbasm -i $(src)/ -o $@ $<
+	@rgbasm -Weverything -i $(src)/ -o $@ $<
 
 $(name).gb: gfx $(obj)
 	@rgblink -n $(name).sym -o $@ $(obj)
