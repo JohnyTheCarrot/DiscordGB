@@ -89,35 +89,33 @@ LoadCharTiles::
     push    af
     sleep_slow 0.0625
     call    WaitVBlank
-    ld      a,      2
+    ld      a,      DEFAULT_SCREEN_Y + SCREEN_SHAKE_AMOUNT
     ldh     [rSCY], a
-    ld      a,      -2
+    ld      a,      DEFAULT_SCREEN_X - SCREEN_SHAKE_AMOUNT
     ldh     [rSCX], a
     sleep_slow 0.0625
     call    WaitVBlank
-    ld      a,      -2
+    ld      a,      DEFAULT_SCREEN_Y - SCREEN_SHAKE_AMOUNT
     ldh     [rSCY], a
-    ld      a,      2
+    ld      a,      DEFAULT_SCREEN_X + SCREEN_SHAKE_AMOUNT
     ldh     [rSCX], a
     sleep_slow 0.0625
     call    WaitVBlank
-    ld      a,      2
+    ld      a,      DEFAULT_SCREEN_Y + SCREEN_SHAKE_AMOUNT
     ldh     [rSCY], a
-    ld      a,      2
+    ld      a,      DEFAULT_SCREEN_X + SCREEN_SHAKE_AMOUNT
     ldh     [rSCX], a
     sleep_slow 0.0625
     call    WaitVBlank
-    ld      a,      -2
+    ld      a,      DEFAULT_SCREEN_Y - SCREEN_SHAKE_AMOUNT
     ldh     [rSCY], a
-    ld      a,      -2
+    ld      a,      DEFAULT_SCREEN_X - SCREEN_SHAKE_AMOUNT
     ldh     [rSCX], a
     pop     af
     jp      .shakeLoop
 
 .finish
-    ld      a,      0
-    ldh     [rSCX], a
-    ldh     [rSCY], a
+    reset_screen_scroll
     pop     af
     inc     hl
     jp      .loop

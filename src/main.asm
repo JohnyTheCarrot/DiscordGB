@@ -30,6 +30,13 @@ Entry:
     call    MemCopy
 
     ; copy tilemap into VRAM
+    ; - load width and height into Temp
+    ld      hl,         Temp
+    xor     a
+    ld      [hl+],      a
+    ld      [hl],       a ; 1 byte shorter than just writing 0 here
+
+    ; - actually load, will use Temp
     ld      hl,         DiscordLogoTilemap
     ld      de,         _SCRN0
     call    TilemapCopy
@@ -53,6 +60,8 @@ Entry:
     call    WaitVBlank
     call    StopLCD
 
+    reset_screen_scroll
+
     ; copy tiles into VRAM
     ld      hl,         DiscordClient
     ld      de,         _VRAM
@@ -60,6 +69,11 @@ Entry:
     call    MemCopy
 
     ; copy tilemap into VRAM
+    ld      hl,         Temp
+    ld      [hl],       2
+    inc     hl
+    ld      [hl],       2
+
     ld      hl,         DiscordClientTilemap
     ld      de,         _SCRN0
     call    TilemapCopy
@@ -68,6 +82,11 @@ Entry:
     ld      de,         _VRAM + (DiscordClient.end - DiscordClient)
     ld      bc,         Dialog.end - Dialog
     call    MemCopy
+
+    ld      hl,         Temp
+    xor     a
+    ld      [hl+],      a
+    ld      [hl],       a
 
     ld      hl,         DialogTilemap
     ld      de,         _SCRN1

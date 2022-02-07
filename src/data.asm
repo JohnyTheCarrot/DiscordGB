@@ -1023,6 +1023,20 @@ Intro::
 .end::
 
 /*
+; screen shake test dialog
+Intro::
+    db NEXT_DIALOG
+    rept 18 * 4
+    db "A"
+    endr
+    rept 300
+    db SHAKE_SCREEN
+    endr
+    db STR_TERM
+.end::
+*/
+
+/*
 ============================
 Variables
 ============================
@@ -1030,3 +1044,6 @@ Variables
 
 section "Variables", wram0
 IsStartupFinished:: ds 1
+Temp::
+    .1:: ds 1
+    .2:: ds 1

@@ -1,7 +1,5 @@
 include "hardware.inc"
 
-def ASCII_START_CODE = $20
-
 section "Memory Utils", rom0
 
 ; hl => source
@@ -63,25 +61,61 @@ IncrementMem::
 
 ; hl => source
 ; de => dest
+; Temp.nib1 => SCRN_X_B + Temp.nib1 = width of image
+; Temp.nib2 => SCRN_Y_B + Temp.nib2 = height of image
 TilemapCopy::
-    ; load into de (destination) _SCRN0 ($9800) and clear b & c
+    ; clear b & c
     ld      b,      0
     ld      c,      0
 
-    ; declare for loop for rows: for (; b < SCRN_Y_B; b++)
+    ; we push bc on the stack because the Y for loop pops and pushes each iteration
+    ; if we don't push here, it'll pop too, but with an unexpected value.
+    push    bc
+    ; declare for loop for rows: for (; b < SCRN_Y_B + Temp.nib2; b++)
 .forLoopY
+    ; at the end of the y loop, we push bc.
+    ; we do this pushing and popping to use the b register,
+    ; but since it is modified in the x loop, we need to save bc before beginning the x loop
+    ; and restore when resuming the y loop
+    pop     bc
+
     ld      a,      b
-    cp      SCRN_Y_B
+
+    ; save hl and af
+    push    hl
+    push    af
+
+    ; heightOffset = Temp.2;
+    ; c = heightOffset + SCRN_Y_B;
+    ; if (a == c) return;
+    ; c = 0;
+    ld      hl,     Temp.2
+    ld      a,      [hl]
+    add     SCRN_Y_B
+    ld      c,      a
+    pop     af ; restore af, we need the original value of a in the following compare instruction
+    cp      c
+    pop     hl ; pop hl now, because if we return, we won't get the chance again
     ret     z
     inc     b
     ; reset c before starting column for loop
     ld      c,      0
 
-    ; declare for loop for columns: for (; c < SCRN_Y_B; c++)
+    push    bc
+
+    ; declare for loop for columns: for (; c < SCRN_Y_B + Temp.nib1; c++)
 .forLoopX
-    ; go to .createFiller if c == SCRN_X_B, .createFiller will return to .forLoopY when done
+    ; load the widthOffset (Temp.1) into a, add the screen width in bytes to it, load a into b to use later in cp
+    push    hl
+    ld      hl,     Temp.1
+    ld      a,      [hl]
+    add     SCRN_X_B
+    ld      b,      a
+    pop     hl
+
+    ; go to .createFiller if c == SCRN_X_B + Temp.nib1, .createFiller will return to .forLoopY when done
     ld      a,      c
-    cp      SCRN_X_B
+    cp      b
     jr      z,     .createFiller
     
     ; *(de++) = *(hl++); c++;
@@ -93,14 +127,24 @@ TilemapCopy::
     ; repeat loop
     jr      .forLoopX
 
-    ; we need to fill the non-visible part of VRAM (c > SCRN_X_B) with stuff,
+    ; we need to fill the non-visible part of VRAM (c > SCRN_X_B + Temp.1) with stuff,
     ; the tile index doesn't matter, but it's 0 here
 .createFiller
     ld      c,      0
 
+    push    hl
+
+    ; load Temp.1 into b for use later in cp
+    ld      hl,     Temp.1
+    ld      a,      SCRN_VX_B - SCRN_X_B
+    sub     [hl]
+    ld      b,      a
+
+    pop     hl
+
 .forLoopFiller
     ld      a,      c
-    cp      SCRN_VX_B - SCRN_X_B
+    cp      b
     jr      z,      .stopForLoop
     ld      a,      0
     ld      [de],   a

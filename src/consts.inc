@@ -12,6 +12,10 @@ def NEXT_DIALOG     = $7F - $20 ; used to split the same text into multiple dial
 def DELAY           = $80 - $20
 def SHAKE_SCREEN    = $81 - $20
 
+def SCREEN_SHAKE_AMOUNT = 2
+def DEFAULT_SCREEN_X = 8
+def DEFAULT_SCREEN_Y = 8
+
 /*
 Sleeps using the specified clock speed.
 
@@ -64,4 +68,14 @@ Sleeps using the second slowest timer speed.
 */
 macro sleep_fast
     sleep \1, 1
+endm
+
+
+macro reset_screen_scroll
+    ld      a,      DEFAULT_SCREEN_X
+    ldh     [rSCX], a
+    if DEFAULT_SCREEN_X != DEFAULT_SCREEN_Y
+    ld      a,      DEFAULT_SCREEN_Y
+    endc
+    ldh     [rSCY], a
 endm
