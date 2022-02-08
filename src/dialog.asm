@@ -125,6 +125,73 @@ LoadCharTiles::
     hl => pointer to null-terminated string
     Uses: de, c, af
 */
+ShowOptionDialog::
+    push    hl
+
+    call    EnableWindow
+
+    ; clear visible vram before writing to it, in case the current line is shorter than the previous
+    for Y, 1, 5
+    ld      h,      ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
+    ld      de,     _SCRN1 + SCRN_VX_B * Y + 1
+    ld      bc,     MAX_LINE_LENGTH
+    call    MemSet
+    endr
+
+    pop     hl
+
+    ; at hl++ there will be a single byte that says how many options to expect, read it into b
+    ld      b,      [hl]
+    inc     hl
+
+.optionRenderLoop
+    push    af
+
+    ; The following, times value of a, will be two pointers, the first of the two pointing towards the string of the option
+    ; and the second of the two will point to the handler of the option, for execution should the user select that option.
+    ; For now, we will ignore the handler, as we only need that pointer if the user actually selected the option.
+    ld      a,      [hl+]
+    ld      c,      a
+    ld      a,      [hl+]
+    push    hl      ; save hl for later use
+
+    ; render the line using the string pointer we just retrieved
+    ld      h,      a ; a into h, due to endiannness
+    ld      l,      c
+
+    call    .renderLine
+
+    ; we're done with that line, restore registers
+    pop     hl
+    pop     af
+
+    ret
+
+.renderLine
+    ld      de,     _SCRN1 + SCRN_VX_B + 1
+
+.loop
+    ; retrieve char at hl+, if terminator, return subroutine
+    ld      a,      [hl+]
+    cp      STR_TERM
+    ret     z
+
+    add     ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
+
+    push    hl
+    call    WaitVRAMAccessible
+    pop     hl
+
+    ld      [de],   a
+    inc     de
+
+    jr      .loop
+
+
+/*
+    hl => pointer to null-terminated string
+    Uses: de, c, af
+*/
 StartDialogSequence::
     push    hl
     call    EnableWindow
@@ -190,3 +257,6 @@ ArrayRead:
     pop     de
     ret
 */
+
+section "Dialog Specific RAM", wram0
+CurrentlySelectedDialogOption: ds 1

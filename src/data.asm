@@ -46,6 +46,7 @@ SineLookupTable::
     ENDR
 .end::
 
+section "Font", rom0
 opt bX.
 
 ; created with help from https://github.com/nezticle/rgbds-template/blob/master/inc/ibmpc1.inc
@@ -1011,6 +1012,8 @@ charmap "|", 92
 charmap "}", 93
 charmap "~", 94
 
+section "Dialog Text", rom0
+
 ; Text
 Intro::
     db "Your day is going pretty great, when", "suddenly.", DELAY, ".", DELAY, NEXT_DIALOG
@@ -1021,6 +1024,12 @@ Intro::
     db "You: Shit.", NEXT_DIALOG
     db "???: https://discord.com/notro", STR_TERM
 .end::
+
+OptionDialog::
+    init_dialog \ 
+        "Option 1", DS_Test_CB, \
+        "Option 2", DS_Test_CB, \
+        "Option 3", DS_Test_CB
 
 /*
 ; screen shake test dialog

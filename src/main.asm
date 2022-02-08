@@ -112,8 +112,10 @@ Entry:
     or      P1F_GET_DPAD
     ldh     [rP1],      a
 
-    ld      hl,         Intro
-    call    StartDialogSequence
+    ; ld      hl,         Intro
+    ; call    StartDialogSequence
+    ld      hl,         OptionDialog
+    call    ShowOptionDialog
 
 .loop
     halt

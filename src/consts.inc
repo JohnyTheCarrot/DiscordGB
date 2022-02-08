@@ -11,6 +11,7 @@ def STR_TERM        = $FF
 def NEXT_DIALOG     = $7F - $20 ; used to split the same text into multiple dialog boxes
 def DELAY           = $80 - $20
 def SHAKE_SCREEN    = $81 - $20
+def NEXT_OPTION     = $82 - $20 ; used to separate different options in a select dialog.
 
 def SCREEN_SHAKE_AMOUNT = 2
 def DEFAULT_SCREEN_X = 8
@@ -78,4 +79,40 @@ macro reset_screen_scroll
     ld      a,      DEFAULT_SCREEN_Y
     endc
     ldh     [rSCY], a
+endm
+
+macro db_term_string
+    db \1, STR_TERM
+endm
+
+macro dialog_option
+    dw \1
+    dw \2
+endm
+
+macro init_dialog
+
+assert fatal, _NARG % 2 == 0, strfmt("init_dialog called in file %s was provided an odd number of arguments: %u arguments", __FILE__, _NARG)
+assert fatal, _NARG >= 4, strfmt("init_dialog called in file %s was provided an even, but too small number of arguments. At least 4 are required (string1, selectCallbackPtr1, string2, selectCallbackptr2, ...), but %u were provided.", __FILE__, _NARG)
+assert fatal, _NARG <= 8, strfmt("init_dialog in file %s called with too many arguments", __FILE__)
+
+db _NARG / 2 ; for the code to know how many options to expect
+
+if _NARG >= 4
+    dialog_option :+, \2
+    dialog_option :++, \4
+endc
+
+if _NARG >= 6
+    dialog_option :+++, \6
+endc
+
+if _NARG == 8
+    dialog_option :++++, \8
+endc
+
+for str, 1, _NARG+1, 2
+:   db_term_string \<{u:str}>
+endr
+
 endm
