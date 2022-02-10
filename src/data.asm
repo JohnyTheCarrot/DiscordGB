@@ -1025,11 +1025,18 @@ Intro::
     db "???: https://discord.com/notro", STR_TERM
 .end::
 
+OptionDialogQuestion:: db_term_string "Do you like cats?"
+
 OptionDialog::
     init_dialog \ 
-        "Option 1", DS_Test_CB, \
-        "Option 2", DS_Test_CB, \
-        "Option 3", DS_Test_CB
+        "Mew", DSeq_Test_Handler, \
+        "Yes, I love cats.", DSeq_Test_Handler, \
+        "I am a bad human.", DSeq_Test_Handler
+
+DialogOptions::
+.o1:: db_term_string ":)"
+.o2:: db_term_string "Correct answer."
+.o3:: db_term_string ">:("
 
 /*
 ; screen shake test dialog

@@ -1,9 +1,6 @@
 include "hardware.inc"
 include "consts.inc"
 
-def MAX_LINE_LENGTH     = 18
-def MAX_DIALOG_LINES    = 4
-
 section "Dialog", rom0
 /*
     hl => source
@@ -61,7 +58,7 @@ LoadCharTiles::
     dec     c
     jr      nz,     .loop
 
-    ; prepare for next line: add SCRN_VX_B (aka the part of the scanline that isn't visible) to e so that we can move onto the next line
+    ; prepare for next line: add SCRN_VX_B  - MAX_LINE_LENGTH (aka the part of the scanline that isn't visible) to e so that we can move onto the next line
     ld      a,      e
     add     SCRN_VX_B - MAX_LINE_LENGTH
     ld      e,      a
@@ -126,28 +123,42 @@ LoadCharTiles::
     Uses: de, c, af
 */
 ShowOptionDialog::
+    ; Clear a, then load a into [CurrentlySelectedDialogOption], effectively clearing [CurrentlySelectedDialogOption].
+    ; We clear it because the value there might either not have been initialised, or it had a lingering value, either way we need to clear it.
+    xor     a
+    ld      [CurrentlySelectedDialogOption], a
+
+.draw
     push    hl
+
+    ld      a,      l
+    ld      [CurrentDialogPointer],     a
+    ld      a,      h
+    ld      [CurrentDialogPointer + 1], a
 
     call    EnableWindow
 
     ; clear visible vram before writing to it, in case the current line is shorter than the previous
     for Y, 1, 5
     ld      h,      ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
-    ld      de,     _SCRN1 + SCRN_VX_B * Y + 1
     ld      bc,     MAX_LINE_LENGTH
+    ld      de,     _SCRN1 + SCRN_VX_B * Y + 1
     call    MemSet
     endr
 
     pop     hl
 
     ; at hl++ there will be a single byte that says how many options to expect, read it into b
-    ld      b,      [hl]
+    ld      a,      [hl]
+    ld      [CurrentDialogLineCount], a
+    ld      b,      a
     inc     hl
 
-.optionRenderLoop
-    push    af
+    ; set line destination
+    ld      de,     _SCRN1 + SCRN_VX_B + 1
 
-    ; The following, times value of a, will be two pointers, the first of the two pointing towards the string of the option
+.optionRenderLoop
+    ; The following, times value of b, will be two pointers, the first of the two pointing towards the string of the option
     ; and the second of the two will point to the handler of the option, for execution should the user select that option.
     ; For now, we will ignore the handler, as we only need that pointer if the user actually selected the option.
     ld      a,      [hl+]
@@ -158,20 +169,120 @@ ShowOptionDialog::
     ; render the line using the string pointer we just retrieved
     ld      h,      a ; a into h, due to endiannness
     ld      l,      c
-
+    ; we save the VRAM pointer de before rendering the line so that
+    ; we can easily add SCRN_VX_B to it later to get to the next line
+    push    de
     call    .renderLine
+    pop     de
 
-    ; we're done with that line, restore registers
+    ; we're done with that line, restore hl
     pop     hl
-    pop     af
+    
+    ; move on to next line
+    ld      a,      e
+    add     SCRN_VX_B
+    ld      e,      a
 
-    ret
+    ; increment hl past handler pointer
+    inc     hl
+    inc     hl
+
+    ; as long as (--b) != 0, get back to .optionRenderLoop
+    dec     b
+    jr      nz,     .optionRenderLoop
+
+.inputWaitLoop
+    ld      c,      P1F_BTN_A | P1F_DPAD_RIGHT | P1F_DPAD_DOWN | P1F_DPAD_UP
+    call    WaitForInput
+
+    cp      P1F_DPAD_DOWN
+    jr      z,      .moveSelectDown
+    cp      P1F_DPAD_UP
+    jr      z,      .moveSelectUp
+    cp      P1F_BTN_A
+    jr      z,      .selectOption
+    cp      P1F_DPAD_RIGHT
+    jr      z,      .selectOption
+    jr      .inputWaitLoop
+
+.selectOption
+    ld      a,      [CurrentDialogPointer]
+    ld      l,      a
+    ld      a,      [CurrentDialogPointer + 1]
+    ld      h,      a
+    inc     hl      ; move past size byte and str pointer
+    inc     hl
+    inc     hl
+    
+    ld      a,      [CurrentlySelectedDialogOption]
+    sla     a
+    ld      c,      a
+    ; ld      b,      0 => not necessary, we used b to count down to zero so this is guaranteed to be zero
+    add     hl,     bc
+    ld      a,      [CurrentlySelectedDialogOption]
+    bit     0,      a
+    jr      z,      :+
+
+    inc     hl
+    inc     hl
+
+:
+    ld      a,      [hl+]
+    ld      c,      a
+    ld      h,      [hl]
+    ld      l,      c
+
+    jp      hl
+
+.moveSelectUp
+    ld      hl,     CurrentlySelectedDialogOption
+    ld      a,      [hl]
+    cp      0
+    jr      z,      .prepareRedraw
+    dec     [hl]
+    jr      .prepareRedraw
+
+.moveSelectDown
+    ld      hl,     CurrentlySelectedDialogOption
+    ld      b,      [hl]
+    ld      a,      [CurrentDialogLineCount]
+    inc     b
+    cp      b
+    jr      z,      .prepareRedraw
+    inc     [hl]
+
+.prepareRedraw
+    ld      a,      [CurrentDialogPointer]
+    ld      l,      a
+    ld      a,      [CurrentDialogPointer + 1]
+    ld      h,      a
+    jp      .draw
 
 .renderLine
-    ld      de,     _SCRN1 + SCRN_VX_B + 1
+    ; check if current line is selected line, if not just proceed to rendering line
+    ld      a,      [CurrentDialogLineCount]
+    sub     b
+    ld      c,      a
+    ld      a,      [CurrentlySelectedDialogOption]
+    cp      c
+    jr      nz,     :+
+    ld      a,      NEXT_DIALOG + ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
+    jr      :++
+
+:
+    ld      a,      ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
+:
+    ; if yes, we need to draw the arrow icon, and then we can proceed to the rendering of the line
+
+    push    hl
+    call    WaitVRAMAccessible
+    pop     hl
+
+    ld      [de],   a
+    inc     de
 
 .loop
-    ; retrieve char at hl+, if terminator, return subroutine
+    ; retrieve char at hl+, if terminator, return char rendering subroutine
     ld      a,      [hl+]
     cp      STR_TERM
     ret     z
@@ -220,6 +331,7 @@ StartDialogSequence::
 
 
 .finish
+    pop     hl
     ld      c,      P1F_BTN_A | P1F_DPAD_DOWN | P1F_DPAD_RIGHT
     call    WaitForInput
     call    HideDialog
@@ -259,4 +371,6 @@ ArrayRead:
 */
 
 section "Dialog Specific RAM", wram0
-CurrentlySelectedDialogOption: ds 1
+CurrentlySelectedDialogOption:: ds 1
+CurrentDialogLineCount: ds 1
+CurrentDialogPointer: ds 2
