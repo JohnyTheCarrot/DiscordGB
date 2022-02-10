@@ -17,3 +17,4 @@ game. I'll be working with a friend of mine who'll help me with the writing. Onc
   This should be fixed.
   The player should not be seeing the random VRAM at any point.
 - Write a story, and implement features as the story requires them.
+- We can probably optimise dialog_init's string pointers to be relative to the dialog's pointer using an unsigned byte

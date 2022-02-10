@@ -7,14 +7,17 @@ P1F_DPAD_LEFT   = %00100000
 P1F_DPAD_UP     = %01000000
 P1F_DPAD_DOWN   = %10000000
 
-def STR_TERM        = $FF
-def NEXT_DIALOG     = $7F - $20 ; used to split the same text into multiple dialog boxes
-def DELAY           = $80 - $20
-def SHAKE_SCREEN    = $81 - $20
+def STR_TERM        equ $FF
+def NEXT_DIALOG     equ $7F - $20 ; used to split the same text into multiple dialog boxes
+def DELAY           equ $80 - $20
+def SHAKE_SCREEN    equ $81 - $20
+def NEXT_OPTION     equ $82 - $20 ; used to separate different options in a select dialog.
 
-def SCREEN_SHAKE_AMOUNT = 2
-def DEFAULT_SCREEN_X = 8
-def DEFAULT_SCREEN_Y = 8
+def MAX_LINE_LENGTH     equ 18
+def MAX_DIALOG_LINES    equ 4
+def SCREEN_SHAKE_AMOUNT equ 2
+def DEFAULT_SCREEN_X    equ 8
+def DEFAULT_SCREEN_Y    equ 8
 
 /*
 Sleeps using the specified clock speed.
@@ -78,4 +81,45 @@ macro reset_screen_scroll
     ld      a,      DEFAULT_SCREEN_Y
     endc
     ldh     [rSCY], a
+endm
+
+macro db_term_string
+    db \1, STR_TERM
+endm
+
+macro dialog_option
+    dw \1 ; string pointer
+    dw \2 ; select handler pointer
+endm
+
+macro dialog_option_string
+    static_assert fatal, strlen(\1) <= MAX_LINE_LENGTH - 1, strfmt("\"%s\"'s length of %u is %u characters too long, and would not fit in the dialog.", \1, strlen(\1), strlen(\1) - (MAX_LINE_LENGTH - 1))
+    db_term_string \1
+endm
+
+macro init_dialog
+
+assert fatal, _NARG % 2 == 0, strfmt("init_dialog called in file %s was provided an odd number of arguments: %u arguments", __FILE__, _NARG)
+assert fatal, _NARG >= 4, strfmt("init_dialog called in file %s was provided an even, but too small number of arguments. At least 4 are required (string1, selectCallbackPtr1, string2, selectCallbackptr2, ...), but %u were provided.", __FILE__, _NARG)
+assert fatal, _NARG <= 8, strfmt("init_dialog in file %s called with too many arguments", __FILE__)
+
+db _NARG / 2 ; for the code to know how many options to expect
+
+if _NARG >= 4
+    dialog_option :+, \2
+    dialog_option :++, \4
+endc
+
+if _NARG >= 6
+    dialog_option :+++, \6
+endc
+
+if _NARG == 8
+    dialog_option :++++, \8
+endc
+
+for str, 1, _NARG+1, 2
+:   dialog_option_string \<{u:str}>
+endr
+
 endm

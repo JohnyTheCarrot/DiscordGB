@@ -13,10 +13,14 @@ WaitForInput::
     ld      a,      [hCurrentKeys]
     and     c
     jr      z,      .waitForSet
+    push    af
 
 .waitForReset
     ld      a,      [hCurrentKeys]
     and     c
     cp      0
     jr      nz,      .waitForReset
+
+    pop     af
+    ; a serves as return value of buttons pressed
     ret
