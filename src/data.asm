@@ -916,105 +916,10 @@ Font::
     db %..X.....
 .end::
 
-charmap " ", 0
-charmap "!", 1
-charmap "\"", 2
-charmap "#", 3
-charmap "$", 4
-charmap "%", 5
-charmap "&", 6
-charmap "'", 7
-charmap "(", 8
-charmap ")", 9
-charmap "*", 10
-charmap "+", 11
-charmap ",", 12
-charmap "-", 13
-charmap ".", 14
-charmap "/", 15
-charmap "0", 16
-charmap "1", 17
-charmap "2", 18
-charmap "3", 19
-charmap "4", 20
-charmap "5", 21
-charmap "6", 22
-charmap "7", 23
-charmap "8", 24
-charmap "9", 25
-charmap ":", 26
-charmap ";", 27
-charmap "<", 28
-charmap "=", 29
-charmap ">", 30
-charmap "?", 31
-charmap "@", 32
-charmap "A", 33
-charmap "B", 34
-charmap "C", 35
-charmap "D", 36
-charmap "E", 37
-charmap "F", 38
-charmap "G", 39
-charmap "H", 40
-charmap "I", 41
-charmap "J", 42
-charmap "K", 43
-charmap "L", 44
-charmap "M", 45
-charmap "N", 46
-charmap "O", 47
-charmap "P", 48
-charmap "Q", 49
-charmap "R", 50
-charmap "S", 51
-charmap "T", 52
-charmap "U", 53
-charmap "V", 54
-charmap "W", 55
-charmap "X", 56
-charmap "Y", 57
-charmap "Z", 58
-charmap "[", 59
-charmap "\\", 60
-charmap "]", 61
-charmap "^", 62
-charmap "_", 63
-charmap "`", 64
-charmap "a", 65
-charmap "b", 66
-charmap "c", 67
-charmap "d", 68
-charmap "e", 69
-charmap "f", 70
-charmap "g", 71
-charmap "h", 72
-charmap "i", 73
-charmap "j", 74
-charmap "k", 75
-charmap "l", 76
-charmap "m", 77
-charmap "n", 78
-charmap "o", 79
-charmap "p", 80
-charmap "q", 81
-charmap "r", 82
-charmap "s", 83
-charmap "t", 84
-charmap "u", 85
-charmap "v", 86
-charmap "w", 87
-charmap "x", 88
-charmap "y", 89
-charmap "z", 90
-charmap "\{", 91
-charmap "|", 92
-charmap "}", 93
-charmap "~", 94
-
 section "Dialog Text", rom0
 
 ; Text
+/*
 Intro::
     db "Your day is going pretty great, when", "suddenly.", DELAY, ".", DELAY, NEXT_DIALOG
     db DELAY, ".", DELAY, ".", DELAY, ".", DELAY, "@everyone", SHAKE_SCREEN, DELAY, NEXT_DIALOG
@@ -1024,6 +929,7 @@ Intro::
     db "You: Shit.", NEXT_DIALOG
     db "???: https://discord.com/notro", STR_TERM
 .end::
+*/
 
 OptionDialogQuestion:: db_term_string "Do you like cats?"
 
