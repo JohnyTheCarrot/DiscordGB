@@ -19,6 +19,8 @@ def SCREEN_SHAKE_AMOUNT equ 2
 def DEFAULT_SCREEN_X    equ 8
 def DEFAULT_SCREEN_Y    equ 8
 
+def MIN_TIMER_PERIOD equ 0.0625
+
 /*
 Sleeps using the specified clock speed.
 

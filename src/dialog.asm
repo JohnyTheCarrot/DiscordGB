@@ -43,6 +43,11 @@ LoadCharTiles::
 
     add     ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
 
+    cp      " "
+    jr      z,      :+
+    sleep_fast MIN_TIMER_PERIOD / 2
+    :
+
     push    hl
     call    WaitVRAMAccessible
     pop     hl
@@ -84,25 +89,25 @@ LoadCharTiles::
     cp      3
     jr      z,      .finish
     push    af
-    sleep_slow 0.0625
+    sleep_slow MIN_TIMER_PERIOD
     call    WaitVBlank
     ld      a,      DEFAULT_SCREEN_Y + SCREEN_SHAKE_AMOUNT
     ldh     [rSCY], a
     ld      a,      DEFAULT_SCREEN_X - SCREEN_SHAKE_AMOUNT
     ldh     [rSCX], a
-    sleep_slow 0.0625
+    sleep_slow MIN_TIMER_PERIOD
     call    WaitVBlank
     ld      a,      DEFAULT_SCREEN_Y - SCREEN_SHAKE_AMOUNT
     ldh     [rSCY], a
     ld      a,      DEFAULT_SCREEN_X + SCREEN_SHAKE_AMOUNT
     ldh     [rSCX], a
-    sleep_slow 0.0625
+    sleep_slow MIN_TIMER_PERIOD
     call    WaitVBlank
     ld      a,      DEFAULT_SCREEN_Y + SCREEN_SHAKE_AMOUNT
     ldh     [rSCY], a
     ld      a,      DEFAULT_SCREEN_X + SCREEN_SHAKE_AMOUNT
     ldh     [rSCX], a
-    sleep_slow 0.0625
+    sleep_slow MIN_TIMER_PERIOD
     call    WaitVBlank
     ld      a,      DEFAULT_SCREEN_Y - SCREEN_SHAKE_AMOUNT
     ldh     [rSCY], a
