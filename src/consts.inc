@@ -12,6 +12,7 @@ def NEXT_DIALOG     equ $7F - $20 ; used to split the same text into multiple di
 def DELAY           equ $80 - $20
 def SHAKE_SCREEN    equ $81 - $20
 def NEXT_OPTION     equ $82 - $20 ; used to separate different options in a select dialog.
+def NEWLINE         equ 95
 
 def MAX_LINE_LENGTH     equ 18
 def MAX_DIALOG_LINES    equ 4
@@ -55,6 +56,24 @@ macro sleep
     call    Sleep
     pop     af
     pop     hl
+endm
+
+macro wrapped_dialog_text
+    def LAST_SPACE_POS = 0
+
+    for i, strlen(\1)
+        if (i + 1) % (SCRN_X_B - 2) == 0
+            redef LAST_SPACE_POS = 0
+            println ""
+            db "\n"
+        endc
+
+        print charsub(\1, i + 1)
+        db charsub(\1, i + 1)
+    endr
+    db STR_TERM
+    println ""
+    purge LAST_SPACE_POS
 endm
 
 /*

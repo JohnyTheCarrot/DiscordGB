@@ -1011,6 +1011,7 @@ charmap "\{", 91
 charmap "|", 92
 charmap "}", 93
 charmap "~", 94
+charmap "\n", NEWLINE
 
 section "Dialog Text", rom0
 
@@ -1025,18 +1026,17 @@ Intro::
     db "???: https://discord.com/notro", STR_TERM
 .end::
 
-OptionDialogQuestion:: db_term_string "Do you like cats?"
+OptionDialogQuestion:: wrapped_dialog_text "Your day is going pretty great, when suddenly."
 
 OptionDialog::
     init_dialog \ 
-        "Mew", DSeq_Test_Handler, \
-        "Yes, I love cats.", DSeq_Test_Handler, \
-        "I am a bad human.", DSeq_Test_Handler
+        "Yes", DSeq_Test_Handler, \
+        "Yes!", DSeq_Test_Handler
 
 DialogOptions::
-.o1:: db_term_string ":)"
-.o2:: db_term_string "Correct answer."
-.o3:: db_term_string ">:("
+.o1:: wrapped_dialog_text "oohoho he do be a stinker doe"
+.o2:: wrapped_dialog_text "oh shit man I can smell him from here"
+.o3:: wrapped_dialog_text "jesus man, does he not have a shower?"
 
 /*
 ; screen shake test dialog

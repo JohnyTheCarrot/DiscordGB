@@ -40,6 +40,8 @@ LoadCharTiles::
     jr      z,      .sleepText
     cp      SHAKE_SCREEN
     jr      z,      .shakeScreen
+    cp      NEWLINE
+    jr      z,      .newline
 
     add     ((DiscordClient.end - DiscordClient) + (Dialog.end - Dialog)) / 16
 
@@ -59,17 +61,18 @@ LoadCharTiles::
     cp      NEXT_DIALOG
     ret     z
 
-    ; if !(--c), jr to .loop, else prepare for next line
+    ; if !(--c), jr to .loop, else prepare for next line, if c is zero, we go to the next line
     dec     c
-    jr      nz,     .loop
+    ;jr      nz,     .loop
+    jr      .loop
 
     ; prepare for next line: add SCRN_VX_B  - MAX_LINE_LENGTH (aka the part of the scanline that isn't visible) to e so that we can move onto the next line
-    ld      a,      e
-    add     SCRN_VX_B - MAX_LINE_LENGTH
-    ld      e,      a
+    ; ld      a,      e
+    ; add     SCRN_VX_B - MAX_LINE_LENGTH
+    ; ld      e,      a
 
     ; reset c back to MAX_LINE_LENGTH, so that it may count back to down to 0
-    ld      c,      MAX_LINE_LENGTH
+    ; ld      c,      MAX_LINE_LENGTH
 
     ; we're prepared, let's enter the loop again
     jr      .loop
@@ -79,6 +82,14 @@ LoadCharTiles::
     inc         hl
     jr          .loop
 
+.newline
+    inc     hl
+    ld      a,      e
+    add     c
+    add     SCRN_VX_B - MAX_LINE_LENGTH
+    ld      e,      a
+    ld      c,      MAX_LINE_LENGTH
+    jr      .loop
 
 .shakeScreen
     push    af
