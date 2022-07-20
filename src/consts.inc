@@ -84,7 +84,8 @@ macro reset_screen_scroll
 endm
 
 macro db_term_string
-    db \1, STR_TERM
+    db \#
+    db STR_TERM
 endm
 
 macro dialog_option

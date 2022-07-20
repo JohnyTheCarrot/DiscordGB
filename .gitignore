@@ -4,3 +4,4 @@
 *.sym
 .DS_Store
 *.gb
+.vscode
